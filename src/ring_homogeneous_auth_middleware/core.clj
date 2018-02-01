@@ -13,14 +13,6 @@
             [compojure.api.meta :as meta]
             [schema.core :as s]))
 
-(s/defn get-identity-info :- (s/maybe IdentityInfo)
-  "Given a ring request and and a couple auth-key auth-info->identity-info.
-  We return the identity-info if possible"
-  [request
-   [auth-key auth-infos->identity-info]]
-  (when-let [auth-infos (get request auth-key)]
-    (auth-infos->identity-info auth-infos)))
-
 (s/defn wrap-auths-fn
   "You should provide a list of [[AuthExtractor]]s your ring request should have
   a :auth key in them."
@@ -46,32 +38,32 @@
         new-letks [id-infos (meta/src-coerce! schema :identity-info :string)]]
     (update-in acc [:letks] into new-letks)))
 
-;; Add the :roles-filter
+;; Add the :scopes-filter
 ;; to compojure api params
 ;; it should contains a set of hash-maps
 ;; example:
 ;;
 ;; ~~~
-;; (POST "/foo" [] :roles-filter #{:admin})
+;; (POST "/foo" [] :scopes-filter #{:admin})
 ;; ~~~
 ;;
-;; Will be accepted only for requests having a role in the authorized set.
+;; Will be accepted only for requests having a scope in the authorized set.
 
-(defn check-roles-filter!
-  [authorized-roles request-roles]
-  (when-not (set? authorized-roles)
-    (throw (ex-info ":roles-filter argument in compojure-api must be a set!" {})))
-  (when-not (and (set? request-roles)
-                 (set/intersection authorized-roles request-roles))
+(defn check-scopes-filter!
+  [authorized-scopes request-scopes]
+  (when-not (set? authorized-scopes)
+    (throw (ex-info ":scopes-filter argument in compojure-api must be a set!" {})))
+  (when-not (and (set? request-scopes)
+                 (set/intersection authorized-scopes request-scopes))
     (ring.util.http-response/unauthorized!
      {:msg "You don't have the required credentials to access this route"})))
 
 (defmethod compojure.api.meta/restructure-param
-  :roles-filter [_ authorized acc]
+  :scopes-filter [_ authorized acc]
   (update-in
    acc
    [:lets]
    into
-   ['_ `(check-roles-filter!
+   ['_ `(check-scopes-filter!
          ~authorized
          (:identity-info ~'+compojure-api-request+))]))
