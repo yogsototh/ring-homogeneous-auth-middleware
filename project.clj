@@ -1,4 +1,4 @@
-(defproject threatgrid/ring-homogeneous-auth-middleware "0.0.2-SNAPSHOT"
+(defproject threatgrid/ring-homogeneous-auth-middleware "0.0.3-SNAPSHOT"
   :description "A simple middleware to deal with multiple auth middlewares"
   :url "http://github.com/threatgrid/ring-homogeneous-auth-middleware"
   :license {:name "Eclipse Public License - v 1.0"
